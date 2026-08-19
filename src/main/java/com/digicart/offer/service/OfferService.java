@@ -8,6 +8,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * Application service implementing offer use cases for <em>offer-service</em>.
+ */
 @Service
 public class OfferService {
 

@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * REST controller exposing offer HTTP APIs for <em>offer-service</em>.
+ */
 @RestController
 @RequestMapping("/api/offers")
 public class OfferController {

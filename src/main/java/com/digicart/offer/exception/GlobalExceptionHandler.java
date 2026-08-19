@@ -12,6 +12,9 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Maps domain and validation failures to HTTP error payloads.
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
