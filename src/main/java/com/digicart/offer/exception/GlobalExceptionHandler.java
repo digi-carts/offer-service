@@ -17,17 +17,34 @@ import java.util.Map;
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
+    /**
+     * Handle entity not found.
+     *
+     * @param ex ex
+     * @return HTTP response
+     */
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleEntityNotFound(EntityNotFoundException ex) {
         return buildError(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
+    /**
+     * Handle constraint violation.
+     *
+     * @param ex ex
+     * @return HTTP response
+     */
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Map<String, Object>> handleConstraintViolation(ConstraintViolationException ex) {
         return buildError(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
+    /**
+     * Handle validation.
+     *
+     * @param ex ex
+     * @return HTTP response
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
         String message = ex.getBindingResult().getFieldErrors().stream()
@@ -36,6 +53,12 @@ public class GlobalExceptionHandler {
         return buildError(HttpStatus.BAD_REQUEST, message);
     }
 
+    /**
+     * Handle generic.
+     *
+     * @param ex ex
+     * @return HTTP response
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
         return buildError(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error");
