@@ -6,7 +6,9 @@ import com.digicart.offer.repository.OfferRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Application service implementing offer use cases for <em>offer-service</em>.
@@ -55,6 +57,20 @@ public class OfferService {
     public Offer update(String id, OfferRequest request) {
         Offer offer = findById(id);
         mapRequestToOffer(request, offer);
+        return offerRepository.save(offer);
+    }
+
+    public Offer patch(String id, Map<String, Object> updates) {
+        Offer offer = findById(id);
+        if (updates.containsKey("active")) offer.setActive((Boolean) updates.get("active"));
+        if (updates.containsKey("code")) offer.setCode((String) updates.get("code"));
+        if (updates.containsKey("type")) offer.setType((String) updates.get("type"));
+        if (updates.containsKey("scope")) offer.setScope((String) updates.get("scope"));
+        if (updates.containsKey("value")) offer.setValue(((Number) updates.get("value")).doubleValue());
+        if (updates.containsKey("maxUses")) offer.setMaxUses(updates.get("maxUses") != null ? ((Number) updates.get("maxUses")).intValue() : null);
+        if (updates.containsKey("expiresAt")) offer.setExpiresAt(updates.get("expiresAt") != null ? Instant.parse((String) updates.get("expiresAt")) : null);
+        if (updates.containsKey("description")) offer.setDescription((String) updates.get("description"));
+        if (updates.containsKey("minOrderAmt")) offer.setMinOrderAmt(((Number) updates.get("minOrderAmt")).doubleValue());
         return offerRepository.save(offer);
     }
 
