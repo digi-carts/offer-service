@@ -7,6 +7,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +21,34 @@ public class OfferService {
 
     public OfferService(OfferRepository offerRepository) {
         this.offerRepository = offerRepository;
+    }
+
+    public Map<String, Object> validate(String code, String scope) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            Offer offer = findByCode(code);
+            if (!Boolean.TRUE.equals(offer.getActive())) {
+                result.put("valid", false); result.put("discount", 0); result.put("offerId", "");
+                result.put("description", offer.getDescription()); result.put("reason", "Offer is inactive");
+                return result;
+            }
+            if (offer.getExpiresAt() != null && offer.getExpiresAt().isBefore(Instant.now())) {
+                result.put("valid", false); result.put("discount", 0); result.put("offerId", "");
+                result.put("description", offer.getDescription()); result.put("reason", "Offer has expired");
+                return result;
+            }
+            if (offer.getMaxUses() != null && offer.getUsedCount() >= offer.getMaxUses()) {
+                result.put("valid", false); result.put("discount", 0); result.put("offerId", "");
+                result.put("description", offer.getDescription()); result.put("reason", "Usage limit reached");
+                return result;
+            }
+            result.put("valid", true); result.put("discount", offer.getValue());
+            result.put("offerId", offer.getId()); result.put("description", offer.getDescription());
+        } catch (EntityNotFoundException e) {
+            result.put("valid", false); result.put("discount", 0); result.put("offerId", "");
+            result.put("description", null); result.put("reason", "Code not found");
+        }
+        return result;
     }
 
     public List<Offer> findAll() {
