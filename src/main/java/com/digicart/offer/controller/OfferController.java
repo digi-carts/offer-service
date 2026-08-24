@@ -24,6 +24,12 @@ public class OfferController {
         this.offerService = offerService;
     }
 
+    @PostMapping("/validate")
+    public ResponseEntity<Map<String, Object>> validate(
+            @RequestBody Map<String, String> body) {
+        return ResponseEntity.ok(offerService.validate(body.get("code"), body.get("scope")));
+    }
+
     @GetMapping("/store")
     public ResponseEntity<Map<String, Object>> getByStore(
             @RequestHeader(value = "X-Store-Id") String storeId) {
