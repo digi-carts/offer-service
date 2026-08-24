@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * REST controller exposing offer HTTP APIs for <em>offer-service</em>.
@@ -21,6 +22,36 @@ public class OfferController {
 
     public OfferController(OfferService offerService) {
         this.offerService = offerService;
+    }
+
+    @GetMapping("/store")
+    public ResponseEntity<Map<String, Object>> getByStore(
+            @RequestHeader(value = "X-Store-Id") String storeId) {
+        return ResponseEntity.ok(Map.of("offers", offerService.findByStoreId(storeId)));
+    }
+
+    @PostMapping("/store")
+    public ResponseEntity<Offer> createForStore(
+            @Valid @RequestBody OfferRequest request,
+            @RequestHeader(value = "X-Store-Id") String storeId) {
+        request.setStoreId(storeId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(offerService.create(request));
+    }
+
+    @PatchMapping("/store/{id}")
+    public ResponseEntity<Offer> patchForStore(
+            @PathVariable String id,
+            @RequestBody Map<String, Object> updates,
+            @RequestHeader(value = "X-Store-Id", required = false) String storeId) {
+        return ResponseEntity.ok(offerService.patch(id, updates));
+    }
+
+    @DeleteMapping("/store/{id}")
+    public ResponseEntity<Void> deleteForStore(
+            @PathVariable String id,
+            @RequestHeader(value = "X-Store-Id", required = false) String storeId) {
+        offerService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping
