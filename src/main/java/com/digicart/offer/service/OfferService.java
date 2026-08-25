@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Application service implementing offer use cases for <em>offer-service</em>.
@@ -55,7 +56,7 @@ public class OfferService {
         return offerRepository.findAll();
     }
 
-    public Offer findById(String id) {
+    public Offer findById(UUID id) {
         return offerRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Offer not found with id: " + id));
     }
@@ -83,13 +84,13 @@ public class OfferService {
         return offerRepository.save(offer);
     }
 
-    public Offer update(String id, OfferRequest request) {
+    public Offer update(UUID id, OfferRequest request) {
         Offer offer = findById(id);
         mapRequestToOffer(request, offer);
         return offerRepository.save(offer);
     }
 
-    public Offer patch(String id, Map<String, Object> updates) {
+    public Offer patch(UUID id, Map<String, Object> updates) {
         Offer offer = findById(id);
         if (updates.containsKey("active")) offer.setActive((Boolean) updates.get("active"));
         if (updates.containsKey("code")) offer.setCode((String) updates.get("code"));
@@ -103,12 +104,12 @@ public class OfferService {
         return offerRepository.save(offer);
     }
 
-    public void delete(String id) {
+    public void delete(UUID id) {
         Offer offer = findById(id);
         offerRepository.delete(offer);
     }
 
-    public Offer incrementUsedCount(String id) {
+    public Offer incrementUsedCount(UUID id) {
         Offer offer = findById(id);
         offer.setUsedCount(offer.getUsedCount() + 1);
         return offerRepository.save(offer);
