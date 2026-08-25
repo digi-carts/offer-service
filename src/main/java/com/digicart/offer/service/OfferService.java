@@ -6,7 +6,10 @@ import com.digicart.offer.repository.OfferRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Application service implementing offer use cases for <em>offer-service</em>.
@@ -18,6 +21,34 @@ public class OfferService {
 
     public OfferService(OfferRepository offerRepository) {
         this.offerRepository = offerRepository;
+    }
+
+    public Map<String, Object> validate(String code, String scope) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            Offer offer = findByCode(code);
+            if (!Boolean.TRUE.equals(offer.getActive())) {
+                result.put("valid", false); result.put("discount", 0); result.put("offerId", "");
+                result.put("description", offer.getDescription()); result.put("reason", "Offer is inactive");
+                return result;
+            }
+            if (offer.getExpiresAt() != null && offer.getExpiresAt().isBefore(Instant.now())) {
+                result.put("valid", false); result.put("discount", 0); result.put("offerId", "");
+                result.put("description", offer.getDescription()); result.put("reason", "Offer has expired");
+                return result;
+            }
+            if (offer.getMaxUses() != null && offer.getUsedCount() >= offer.getMaxUses()) {
+                result.put("valid", false); result.put("discount", 0); result.put("offerId", "");
+                result.put("description", offer.getDescription()); result.put("reason", "Usage limit reached");
+                return result;
+            }
+            result.put("valid", true); result.put("discount", offer.getValue());
+            result.put("offerId", offer.getId()); result.put("description", offer.getDescription());
+        } catch (EntityNotFoundException e) {
+            result.put("valid", false); result.put("discount", 0); result.put("offerId", "");
+            result.put("description", null); result.put("reason", "Code not found");
+        }
+        return result;
     }
 
     public List<Offer> findAll() {
@@ -55,6 +86,20 @@ public class OfferService {
     public Offer update(String id, OfferRequest request) {
         Offer offer = findById(id);
         mapRequestToOffer(request, offer);
+        return offerRepository.save(offer);
+    }
+
+    public Offer patch(String id, Map<String, Object> updates) {
+        Offer offer = findById(id);
+        if (updates.containsKey("active")) offer.setActive((Boolean) updates.get("active"));
+        if (updates.containsKey("code")) offer.setCode((String) updates.get("code"));
+        if (updates.containsKey("type")) offer.setType((String) updates.get("type"));
+        if (updates.containsKey("scope")) offer.setScope((String) updates.get("scope"));
+        if (updates.containsKey("value")) offer.setValue(((Number) updates.get("value")).doubleValue());
+        if (updates.containsKey("maxUses")) offer.setMaxUses(updates.get("maxUses") != null ? ((Number) updates.get("maxUses")).intValue() : null);
+        if (updates.containsKey("expiresAt")) offer.setExpiresAt(updates.get("expiresAt") != null ? Instant.parse((String) updates.get("expiresAt")) : null);
+        if (updates.containsKey("description")) offer.setDescription((String) updates.get("description"));
+        if (updates.containsKey("minOrderAmt")) offer.setMinOrderAmt(((Number) updates.get("minOrderAmt")).doubleValue());
         return offerRepository.save(offer);
     }
 
