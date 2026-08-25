@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -30,8 +31,9 @@ class OfferServiceTest {
 
     @Test
     void findByIdThrowsWhenMissing() {
-        when(offerRepository.findById("missing")).thenReturn(Optional.empty());
-        assertThatThrownBy(() -> offerService.findById("missing"))
+        UUID missingId = UUID.randomUUID();
+        when(offerRepository.findById(missingId)).thenReturn(Optional.empty());
+        assertThatThrownBy(() -> offerService.findById(missingId))
                 .isInstanceOf(EntityNotFoundException.class);
     }
 
@@ -52,13 +54,13 @@ class OfferServiceTest {
 
     @Test
     void incrementUsedCountAddsOne() {
+        UUID offerId = UUID.randomUUID();
         Offer offer = new Offer();
-        offer.setId("o1");
         offer.setUsedCount(2);
-        when(offerRepository.findById("o1")).thenReturn(Optional.of(offer));
+        when(offerRepository.findById(offerId)).thenReturn(Optional.of(offer));
         when(offerRepository.save(any(Offer.class))).thenAnswer(i -> i.getArgument(0));
 
-        Offer updated = offerService.incrementUsedCount("o1");
+        Offer updated = offerService.incrementUsedCount(offerId);
         assertThat(updated.getUsedCount()).isEqualTo(3);
     }
 
