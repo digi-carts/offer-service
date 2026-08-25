@@ -109,10 +109,77 @@ public class OfferService {
         offerRepository.delete(offer);
     }
 
+    public List<Offer> findPublicOffers() {
+        return offerRepository.findByType("PUBLIC");
+    }
+
+    public Map<String, Object> applyOffer(String code, String orderId) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            Offer offer = findByCode(code);
+            offer.setUsedCount(offer.getUsedCount() + 1);
+            offerRepository.save(offer);
+            result.put("applied", true);
+            result.put("code", code);
+            result.put("discount", offer.getValue());
+        } catch (EntityNotFoundException e) {
+            result.put("applied", true);
+            result.put("code", code);
+            result.put("discount", 0);
+        }
+        return result;
+    }
+
     public Offer incrementUsedCount(UUID id) {
         Offer offer = findById(id);
         offer.setUsedCount(offer.getUsedCount() + 1);
         return offerRepository.save(offer);
+    }
+
+    public java.util.Optional<Offer> findReferralByStoreId(String storeId) {
+        return offerRepository.findByStoreIdAndType(storeId, "REFERRAL");
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public Offer createReferralCode(String storeId) {
+        return offerRepository.findByStoreIdAndType(storeId, "REFERRAL").orElseGet(() -> {
+            String suffix = storeId.substring(Math.max(0, storeId.length() - 6)).toUpperCase();
+            Offer offer = new Offer();
+            offer.setCode("REF-" + suffix);
+            offer.setType("REFERRAL");
+            offer.setScope("ORDER");
+            offer.setValue(0.0);
+            offer.setStoreId(storeId);
+            offer.setActive(true);
+            return offerRepository.save(offer);
+        });
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public java.util.Map<String, Object> applyReferral(String referralCode, String applyingStoreId) {
+        Offer referral;
+        try {
+            referral = findByCode(referralCode);
+        } catch (jakarta.persistence.EntityNotFoundException e) {
+            return java.util.Map.of("success", false, "message", "Invalid referral code");
+        }
+        if (!"REFERRAL".equals(referral.getType())) {
+            return java.util.Map.of("success", false, "message", "Invalid referral code");
+        }
+        String couponCode = "REFERME-" + applyingStoreId.substring(Math.max(0, applyingStoreId.length() - 6)).toUpperCase();
+        Offer coupon = offerRepository.findByCode(couponCode).orElseGet(() -> {
+            Offer o = new Offer();
+            o.setCode(couponCode);
+            o.setType("COUPON");
+            o.setScope("ORDER");
+            o.setValue(referral.getValue());
+            o.setStoreId(applyingStoreId);
+            o.setActive(true);
+            o.setRefCode(referralCode);
+            return o;
+        });
+        offerRepository.save(coupon);
+        return java.util.Map.of("success", true, "couponCode", couponCode);
     }
 
     private void mapRequestToOffer(OfferRequest request, Offer offer) {
