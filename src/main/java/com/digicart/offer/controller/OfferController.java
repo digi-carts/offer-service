@@ -25,6 +25,18 @@ public class OfferController {
         this.offerService = offerService;
     }
 
+    @GetMapping("/public")
+    public ResponseEntity<List<Offer>> getPublic() {
+        return ResponseEntity.ok(offerService.findPublicOffers());
+    }
+
+    @PostMapping("/apply")
+    public ResponseEntity<Map<String, Object>> apply(
+            @RequestBody Map<String, String> body,
+            @RequestHeader(value = "X-User-Id", required = false) String userId) {
+        return ResponseEntity.ok(offerService.applyOffer(body.get("code"), body.get("orderId")));
+    }
+
     @PostMapping("/validate")
     public ResponseEntity<Map<String, Object>> validate(
             @RequestBody Map<String, String> body) {
@@ -125,5 +137,27 @@ public class OfferController {
             @RequestHeader(value = "X-User-Id", required = false) String userId,
             @RequestHeader(value = "X-User-Role", required = false) String userRole) {
         return ResponseEntity.ok(offerService.incrementUsedCount(id));
+    }
+
+    @GetMapping("/store/referral")
+    public ResponseEntity<Map<String, Object>> getStoreReferral(
+            @RequestHeader("X-Store-Id") String storeId) {
+        return offerService.findReferralByStoreId(storeId)
+                .map(o -> ResponseEntity.ok(Map.<String, Object>of("offer", o)))
+                .orElse(ResponseEntity.ok(Map.of("offer", (Object) null)));
+    }
+
+    @PostMapping("/store/referral")
+    public ResponseEntity<Offer> createStoreReferral(
+            @RequestHeader("X-Store-Id") String storeId) {
+        return ResponseEntity.ok(offerService.createReferralCode(storeId));
+    }
+
+    @PostMapping("/referral/apply")
+    public ResponseEntity<Map<String, Object>> applyReferral(
+            @RequestBody Map<String, String> body,
+            @RequestHeader(value = "X-Store-Id", required = false) String storeId) {
+        String applyingStore = storeId != null ? storeId : body.get("storeId");
+        return ResponseEntity.ok(offerService.applyReferral(body.get("code"), applyingStore));
     }
 }

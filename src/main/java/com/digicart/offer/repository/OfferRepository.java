@@ -15,6 +15,8 @@ import java.util.UUID;
 public interface OfferRepository extends JpaRepository<Offer, UUID> {
     List<Offer> findByStoreId(String storeId);
     Optional<Offer> findByCode(String code);
+    Optional<Offer> findByStoreIdAndType(String storeId, String type);
     List<Offer> findByActiveTrue();
     List<Offer> findByStoreIdAndActiveTrue(String storeId);
+    List<Offer> findByType(String type);
 }
