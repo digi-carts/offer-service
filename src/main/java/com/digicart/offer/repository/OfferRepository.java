@@ -6,11 +6,17 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
+/**
+ * Spring Data JPA repository for offer  persistence.
+ */
 @Repository
-public interface OfferRepository extends JpaRepository<Offer, String> {
+public interface OfferRepository extends JpaRepository<Offer, UUID> {
     List<Offer> findByStoreId(String storeId);
     Optional<Offer> findByCode(String code);
+    Optional<Offer> findByStoreIdAndType(String storeId, String type);
     List<Offer> findByActiveTrue();
     List<Offer> findByStoreIdAndActiveTrue(String storeId);
+    List<Offer> findByType(String type);
 }

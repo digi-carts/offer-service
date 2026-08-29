@@ -6,7 +6,11 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
+import java.util.UUID;
 
+/**
+ * JPA entity mapped in this service schema (Offer).
+ */
 @Entity
 @Table(name = "offers", schema = "offer_svc")
 @EntityListeners(AuditingEntityListener.class)
@@ -14,7 +18,7 @@ public class Offer {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    private UUID id;
 
     @Column(name = "code", nullable = false)
     private String code;
@@ -62,8 +66,8 @@ public class Offer {
 
     public Offer() {}
 
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    public UUID getId() { return id; }
+    public void setId(UUID id) { this.id = id; }
 
     public String getCode() { return code; }
     public void setCode(String code) { this.code = code; }

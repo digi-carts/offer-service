@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotNull;
 
 import java.time.Instant;
 
+/**
+ * Request/response DTO: Offer Request.
+ */
 public class OfferRequest {
 
     @NotBlank
